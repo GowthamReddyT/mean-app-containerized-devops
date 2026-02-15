@@ -9,8 +9,10 @@ pipeline {
 
         stage('Clone') {
             steps {
-                git 'https://github.com/GowthamReddyT/mean-app-containerized-devops.git'
+                    git branch: 'main', url: 'https://github.com/GowthamReddyT/mean-app-containerized-devops.git'
+                }
             }
+
         }
 
         stage('Build Backend Image') {
