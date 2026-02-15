@@ -3,25 +3,29 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        DOCKER_USER = "gowtham755"
+        IMAGE_BACKEND = "gowtham755/mean-backend"
+        IMAGE_FRONTEND = "gowtham755/mean-frontend"
     }
 
-       stage('Clone') {
-        steps {
-            git branch: 'main',
-                url: 'https://github.com/GowthamReddyT/mean-app-containerized-devops.git'
-         }
-      }
+    stages {
 
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/GowthamReddyT/mean-app-containerized-devops.git'
+            }
+        }
 
         stage('Build Backend Image') {
             steps {
-                sh 'docker build -t gowtham755/mean-backend ./backend'
+                sh 'docker build -t $IMAGE_BACKEND ./backend'
             }
         }
 
         stage('Build Frontend Image') {
             steps {
-                sh 'docker build -t gowtham755/mean-frontend ./frontend'
+                sh 'docker build -t $IMAGE_FRONTEND ./frontend'
             }
         }
 
@@ -33,15 +37,14 @@ pipeline {
 
         stage('Push Images') {
             steps {
-                sh 'docker push gowtham755/mean-backend'
-                sh 'docker push gowtham755/mean-frontend'
+                sh 'docker push $IMAGE_BACKEND'
+                sh 'docker push $IMAGE_FRONTEND'
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy Application') {
             steps {
                 sh '''
-                cd ~/mean-app-containerized-devops
                 docker compose down
                 docker compose pull
                 docker compose up -d
