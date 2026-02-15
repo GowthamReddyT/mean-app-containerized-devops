@@ -5,15 +5,13 @@ pipeline {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
     }
 
-    stages {
+       stage('Clone') {
+        steps {
+            git branch: 'main',
+                url: 'https://github.com/GowthamReddyT/mean-app-containerized-devops.git'
+         }
+      }
 
-        stage('Clone') {
-            steps {
-                    git branch: 'main', url: 'https://github.com/GowthamReddyT/mean-app-containerized-devops.git'
-                }
-            }
-
-        }
 
         stage('Build Backend Image') {
             steps {
