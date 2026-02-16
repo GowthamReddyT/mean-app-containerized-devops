@@ -5,6 +5,7 @@ pipeline {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
         IMAGE_BACKEND = "gowtham755/mean-backend"
         IMAGE_FRONTEND = "gowtham755/mean-frontend"
+        COMPOSE_PROJECT = "meanapp"
     }
 
     stages {
@@ -44,11 +45,22 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 sh '''
-                docker rm -f mongo backend frontend nginx mongodb 2>/dev/null || true
-                docker compose down --remove-orphans || true
-                docker network prune -f
-                docker compose pull
-                docker compose up -d --force-recreate
+                echo "Stopping old deployment..."
+                docker compose -p $COMPOSE_PROJECT down --remove-orphans || true
+
+                echo "Removing existing containers..."
+                docker rm -f mongo backend frontend nginx 2>/dev/null || true
+
+                echo "Removing unused networks..."
+                docker network prune -f || true
+
+                echo "Pulling latest images..."
+                docker compose -p $COMPOSE_PROJECT pull
+
+                echo "Starting fresh deployment..."
+                docker compose -p $COMPOSE_PROJECT up -d --build --force-recreate --renew-anon-volumes
+
+                echo "Running containers:"
                 docker ps
                 '''
             }
