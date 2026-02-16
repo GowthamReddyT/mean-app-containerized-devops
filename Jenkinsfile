@@ -5,7 +5,6 @@ pipeline {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
         IMAGE_BACKEND = "gowtham755/mean-backend"
         IMAGE_FRONTEND = "gowtham755/mean-frontend"
-        COMPOSE_PROJECT = "meanapp"
     }
 
     stages {
@@ -17,19 +16,14 @@ pipeline {
             }
         }
 
-        stage('Build Backend Image') {
+        stage('Build Images (No Cache)') {
             steps {
                 sh 'docker build --no-cache -t $IMAGE_BACKEND backend'
-            }
-        }
-
-        stage('Build Frontend Image') {
-            steps {
                 sh 'docker build --no-cache -t $IMAGE_FRONTEND frontend'
             }
         }
 
-        stage('DockerHub Login') {
+        stage('Login to DockerHub') {
             steps {
                 sh 'echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin'
             }
@@ -42,23 +36,18 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy Containers') {
             steps {
                 sh '''
-                echo "Stopping old deployment..."
-                docker compose -p $COMPOSE_PROJECT down --remove-orphans || true
+                echo "Stopping old containers"
+                docker compose down --remove-orphans || true
 
-                echo "Removing old containers..."
-                docker rm -f mongo backend frontend nginx 2>/dev/null || true
+                echo "Pull latest images from DockerHub"
+                docker pull $IMAGE_BACKEND
+                docker pull $IMAGE_FRONTEND
 
-                echo "Removing old images..."
-                docker image rm -f $IMAGE_BACKEND $IMAGE_FRONTEND 2>/dev/null || true
-
-                echo "Pull latest images..."
-                docker compose -p $COMPOSE_PROJECT pull
-
-                echo "Starting fresh deployment..."
-                docker compose -p $COMPOSE_PROJECT up -d --force-recreate
+                echo "Starting fresh deployment"
+                docker compose up -d --force-recreate
 
                 echo "Running containers:"
                 docker ps
@@ -69,10 +58,10 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment Successful'
+            echo 'Deployment Successful 🎉'
         }
         failure {
-            echo 'Deployment Failed'
+            echo 'Deployment Failed ❌'
         }
     }
 }
