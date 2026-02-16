@@ -3,10 +3,8 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        DOCKER_USER = "gowtham755"
         IMAGE_BACKEND = "gowtham755/mean-backend"
         IMAGE_FRONTEND = "gowtham755/mean-frontend"
-        PROJECT_DIR = "mean-app-containerized-devops"
     }
 
     stages {
@@ -20,13 +18,13 @@ pipeline {
 
         stage('Build Backend Image') {
             steps {
-                sh 'docker build -t $IMAGE_BACKEND $PROJECT_DIR/backend'
+                sh 'docker build -t $IMAGE_BACKEND backend'
             }
         }
 
         stage('Build Frontend Image') {
             steps {
-                sh 'docker build -t $IMAGE_FRONTEND $PROJECT_DIR/frontend'
+                sh 'docker build -t $IMAGE_FRONTEND frontend'
             }
         }
 
@@ -45,9 +43,9 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                sh 'cd $PROJECT_DIR && docker compose down || true'
-                sh 'cd $PROJECT_DIR && docker compose pull || true'
-                sh 'cd $PROJECT_DIR && docker compose up -d'
+                sh 'docker compose down || true'
+                sh 'docker compose pull || true'
+                sh 'docker compose up -d'
             }
         }
     }
