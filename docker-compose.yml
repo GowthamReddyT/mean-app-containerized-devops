@@ -2,21 +2,25 @@ version: "3.8"
 
 services:
 
-  mongodb:
+  mongo:
     image: mongo
-    container_name: mongodb
+    container_name: mongo
     restart: always
     volumes:
       - mongo-data:/data/db
+    ports:
+      - "27017:27017"
 
   backend:
     image: gowtham755/mean-backend
     container_name: backend
     restart: always
     environment:
-      - DB_HOST=mongodb
+      - MONGO_URI=mongodb://mongo:27017/tasks
     depends_on:
-      - mongodb
+      - mongo
+    ports:
+      - "5000:8080"
 
   frontend:
     image: gowtham755/mean-frontend
@@ -24,10 +28,13 @@ services:
     restart: always
     depends_on:
       - backend
+    ports:
+      - "4200:80"
 
   nginx:
     image: nginx:alpine
     container_name: nginx
+    restart: always
     ports:
       - "80:80"
     volumes:
