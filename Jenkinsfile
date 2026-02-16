@@ -44,7 +44,9 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 sh '''
+                docker rm -f mongo backend frontend nginx mongodb 2>/dev/null || true
                 docker compose down --remove-orphans || true
+                docker network prune -f
                 docker compose pull
                 docker compose up -d --force-recreate
                 docker ps
