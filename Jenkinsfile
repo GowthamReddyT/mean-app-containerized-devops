@@ -19,13 +19,13 @@ pipeline {
 
         stage('Build Backend Image') {
             steps {
-                sh 'docker build -t $IMAGE_BACKEND backend'
+                sh 'docker build --no-cache -t $IMAGE_BACKEND backend'
             }
         }
 
         stage('Build Frontend Image') {
             steps {
-                sh 'docker build -t $IMAGE_FRONTEND frontend'
+                sh 'docker build --no-cache -t $IMAGE_FRONTEND frontend'
             }
         }
 
@@ -48,17 +48,17 @@ pipeline {
                 echo "Stopping old deployment..."
                 docker compose -p $COMPOSE_PROJECT down --remove-orphans || true
 
-                echo "Removing existing containers..."
+                echo "Removing old containers..."
                 docker rm -f mongo backend frontend nginx 2>/dev/null || true
 
-                echo "Removing unused networks..."
-                docker network prune -f || true
+                echo "Removing old images..."
+                docker image rm -f $IMAGE_BACKEND $IMAGE_FRONTEND 2>/dev/null || true
 
-                echo "Pulling latest images..."
+                echo "Pull latest images..."
                 docker compose -p $COMPOSE_PROJECT pull
 
                 echo "Starting fresh deployment..."
-                docker compose -p $COMPOSE_PROJECT up -d --build --force-recreate --renew-anon-volumes
+                docker compose -p $COMPOSE_PROJECT up -d --force-recreate
 
                 echo "Running containers:"
                 docker ps
