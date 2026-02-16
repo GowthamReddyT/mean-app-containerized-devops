@@ -2,7 +2,6 @@ services:
 
   mongo:
     image: mongo
-    container_name: mongo
     restart: always
     volumes:
       - mongo-data:/data/db
@@ -11,7 +10,6 @@ services:
 
   backend:
     image: gowtham755/mean-backend
-    container_name: backend
     restart: always
     environment:
       - MONGO_URI=mongodb://mongo:27017/tasks
@@ -22,7 +20,6 @@ services:
 
   frontend:
     image: gowtham755/mean-frontend
-    container_name: frontend
     restart: always
     depends_on:
       - backend
@@ -31,7 +28,6 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: nginx
     restart: always
     ports:
       - "80:80"
