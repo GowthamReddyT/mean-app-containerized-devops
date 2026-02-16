@@ -1,37 +1,13 @@
-const express = require("express");
-//const cors = require("cors");
+const mongoose = require("mongoose");
 
-const app = express();
+mongoose.Promise = global.Promise;
 
-// parse requests of content-type - application/json
-app.use(express.json());
+const db = {};
+db.mongoose = mongoose;
 
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }));
+// IMPORTANT: read from docker environment variable
+db.url = process.env.MONGO_URI || "mongodb://localhost:27017/tasks";
 
-const db = require("./app/models");
-db.mongoose
-  .connect(db.url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => {
-    console.log("Connected to the database!");
-  })
-  .catch(err => {
-    console.log("Cannot connect to the database!", err);
-    process.exit();
-  });
+db.tutorials = require("./tutorial.model.js")(mongoose);
 
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Test application." });
-});
-
-require("./app/routes/turorial.routes")(app);
-
-// set port, listen for requests
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
-});
+module.exports = db;
